@@ -14,7 +14,7 @@ export default function (req: NextApiRequest, res: NextApiResponse<Data>) {
             return getEntries( res );
 
         case 'POST':
-            return postEntries(req, res)
+            return postEntries(req, res);
 
         default:
             return res.status(400).json({ message: 'El endpoint no existe' });
