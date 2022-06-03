@@ -11,6 +11,12 @@ docker-compose up -d
 mongodb://localhost:27017/
 ```
 
+* Reconstruir los módulos de node y levantar Next
+```
+yarn install
+yarn dev
+```
+
 #Configurar las variables de entorno
 Renombrar el archivo _.env.template __a__ a .env
 
