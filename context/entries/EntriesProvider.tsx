@@ -3,6 +3,7 @@ import { Entry } from '../../interfaces';
 
 import { EntriesContext, entriesReducer } from './';
 import { entriesApi } from '../../api';
+import { useSnackbar } from 'notistack';
 
 export interface EntriesState {
     entries: Entry[];
@@ -20,11 +21,13 @@ export const EntriesProvider:FC<Props>= ({ children }) => {
 
     const [state, dispatch] = useReducer(entriesReducer, Entries_INITIAL_STATE );
 
+    const { enqueueSnackbar } = useSnackbar();
+
     const addNewEntry = async(description: string) => {
         // const newEntry: Entry = {
         //     _id :   uuidv4(),
         //     description,
-        //     createAt: Date.now(),
+        //     createdAt: Date.now(),
         //     status: 'pending',
         // }
 
@@ -35,7 +38,7 @@ export const EntriesProvider:FC<Props>= ({ children }) => {
         dispatch({ type: '[Entry] - add entry', payload: data })
     }
 
-    const updateEntry = async({_id, description, status}: Entry) => {
+    const updateEntry = async({_id, description, status}: Entry, showSnackbar = false) => {
 
         try {
             const { data } = await entriesApi.put<Entry>(`/entries/${_id}`,{
@@ -43,7 +46,43 @@ export const EntriesProvider:FC<Props>= ({ children }) => {
                 status,
             });
 
+            //Mostrar snackbar notification
+            if( showSnackbar ) {
+                enqueueSnackbar('Entry updated',{
+                    variant: 'success',
+                    autoHideDuration: 1500,
+                    anchorOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                    }
+                });
+            }
+
+
             dispatch({ type: '[Entry] - Entry-Update', payload: data });
+        } catch (e) {
+            console.log({ e })
+        }
+    }
+
+    const deleteEntry = async( _id : string, showSnackbar = false) => {
+
+        try {
+            const  res  = await entriesApi.delete(`/entries/${_id}`);
+            console.log({ res })
+            if( showSnackbar ) {
+                enqueueSnackbar('Entry deleted',{
+                    variant: 'error',
+                    autoHideDuration: 1500,
+                    anchorOrigin: {
+                        vertical: 'bottom',
+                        horizontal: 'left',
+                    }
+                });
+            }
+
+
+            dispatch({ type: '[Entry] - Entry-Delete', payload: _id });
         } catch (e) {
             console.log({ e })
         }
@@ -67,6 +106,7 @@ export const EntriesProvider:FC<Props>= ({ children }) => {
             //Methods
             addNewEntry,
             updateEntry,
+            deleteEntry,
         }}>
             { children }
         </EntriesContext.Provider>

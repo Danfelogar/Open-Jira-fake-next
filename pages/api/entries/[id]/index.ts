@@ -15,11 +15,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Data>)
     // }
 
     switch (req.method) {
+        case 'GET':
+            return getEntry(req, res);
+
         case 'PUT':
             return updateEntry(req, res);
 
-        case 'GET':
-            return getEntry(req, res);
+        case 'DELETE':
+            return deleteEntry(req, res);
 
         default:
             return res.status(400).json({ message: 'EL metodo no existe' });
@@ -27,6 +30,22 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Data>)
 
 }
 
+const getEntry = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
+
+    const { id } = req.query;
+
+    await db.connect();
+
+    const entryInDB =  await Entry.findById(id);
+
+    await db.disconnect();
+
+    if( !entryInDB ) {
+        return res.status(404).json({ message: 'No  hay entrada con ese ID:' + id });
+    }
+
+    res.status(200).json( entryInDB );
+}
 
 const updateEntry = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
 
@@ -56,22 +75,27 @@ const updateEntry = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
         res.status(400).json({ message: 'Bad request' });
     }
 
-
 }
 
-const getEntry = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
+const deleteEntry = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
 
     const { id } = req.query;
 
     await db.connect();
 
-    const entryInDB =  await Entry.findById(id);
+    const entryToDelete =  await Entry.findById(id);
 
-    await db.disconnect();
-
-    if( !entryInDB ) {
-        return res.status(404).json({ message: 'No  hay entrada con ese ID:' + id });
+    if( !entryToDelete ) {
+        return res.status(404).json({ message: 'No  hay entrada para borrar con ese ID:' + id });
     }
 
-    res.status(200).json( entryInDB );
+    try {
+        const deleteEntry = await Entry.findByIdAndRemove(id);
+
+        res.status(200).json( deleteEntry! );
+    } catch (e) {
+        await db.disconnect();
+        res.status(400).json({ message: 'Bad request' });
+    }
+
 }
