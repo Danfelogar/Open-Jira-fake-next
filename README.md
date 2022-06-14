@@ -8,7 +8,7 @@ docker-compose up -d
 
 #MongoDB URL Local:
 ```
-mongodb://localhost:27017/
+mongodb://localhost:27017/ "ejempo anadir entriesdb"
 ```
 
 * Reconstruir los módulos de node y levantar Next
